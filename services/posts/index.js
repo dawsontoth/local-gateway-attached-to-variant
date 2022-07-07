@@ -7,6 +7,6 @@ const schema = buildSubgraphSchema([{ typeDefs, resolvers }]);
 
 const server = new ApolloServer({ schema });
 
-server.listen(4002).then(({ url }) => {
+server.listen(4003).then(({ url }) => {
   console.log(`🚀 Posts service ready at ${url}`);
 });
