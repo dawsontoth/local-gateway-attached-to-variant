@@ -9,8 +9,8 @@
     "start": "node ./gateway/index.js",
     "watch": "nodemon ./gateway/index.js",
     "start:subgraphs": "concurrently -k npm:server:*",
-    "server:authors": "nodemon ./services/authors/index.js",
-    "server:posts": "nodemon ./services/posts/index.js",
+    "server:authors": "nodemon ./example-services/authors/index.js",
+    "server:posts": "nodemon ./example-services/posts/index.js",
     "server:gateway": "wait-on tcp:4001 tcp:4002 && nodemon ./gateway/index.js"
   },
   "dependencies": {
