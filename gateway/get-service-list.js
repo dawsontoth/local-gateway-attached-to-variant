@@ -3,6 +3,7 @@ import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import axios from 'axios';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,53 +14,35 @@ const config = yaml.load(
   })
 );
 
-function breakUpOutput(output) {
-  // breaks the output from a long string into a string per line
-  // then removes the lines that are just horizontal lines
-  const rowsWithOutHorzLines = output
-    .split('\n')
-    .filter((line) => line.indexOf('─') < 0);
-
-  const indexOfFirstBlankRow = rowsWithOutHorzLines.indexOf('');
-
-  // removes the other lines that do not contain
-  // information on a subgraph
-  const rowsWithSubGraphs = rowsWithOutHorzLines.splice(
-    1,
-    indexOfFirstBlankRow - 1
-  );
-
-  const parsedStrings = rowsWithSubGraphs.map((line) => {
-    const processed = line
-      .split('│')
-      .filter((split) => split)
-      .map((p) => p.trim());
-    return { name: processed[0], url: processed[1] };
-  });
-  return parsedStrings;
-}
-
-function replaceRoverDataWithConfig(roverData, configData) {
-  return Object.values({ ...roverData, ...configData });
+function makeSubgraphQueryPayload() {
+  return {
+    operationName: 'SubgraphListQuery',
+    query:
+      'query SubgraphListQuery($graph_id: ID!, $variant: String!) {  frontendUrlRoot  graph(id: $graph_id) {    variant(name: $variant) {      subgraphs {        name        url        updatedAt      }    }  }}',
+    variables: { graph_id: config.graphName, variant: config.variant },
+  };
 }
 
 export async function GetServiceList() {
-  return new Promise((res, rej) => {
-    exec(
-      `rover subgraph list ${config.graphName}@${config.variant}`,
-      (err, stdout, stderr) => {
-        if (err) {
-          rej(err);
-          return;
-        }
-        if (stderr) {
-          rej(stderr);
-          return;
-        }
+  const { data, errors } = await axios.post(
+    'https://graphql.api.apollographql.com/api/graphql',
+    makeSubgraphQueryPayload(),
+    {
+      headers: {
+        'X-API-KEY': config.apiKey,
+      },
+    }
+  );
 
-        const roverData = breakUpOutput(stdout);
-        res(replaceRoverDataWithConfig(roverData, config.replacedServices));
-      }
+  if (errors || !data.data) {
+    throw new Error(
+      `something went wrong when talking to studio: ${
+        errors
+          ? JSON.stringify(errors)
+          : 'No graphs were received. Please check your settings have an API key, graph name and variant and try again.'
+      }`
     );
-  });
+  }
+
+  return data.data.graph.variant.subgraphs;
 }

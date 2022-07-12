@@ -15,27 +15,24 @@ To install packages please run a `yarn` from the root.
 ### prerequisite/setup
 
 - Have an Apollo studio account
-- [Apollo Rover](https://www.apollographql.com/docs/rover/) must be set up.
+  - Have an API key for said account
 - Have the name and variant of the super graph you want to use.
 
 ### Using the package
 
-Please go to the `./config.js` file and replace the data with your desired data.
+Please go to the `./settings.yaml` file and replace the data with your desired data.
 
 - `replacedServices` is the set of services you want to over ride from studio with your local services. It should have the **same name** as the services you want to replace.
   - it should follow the same pattern as below:
 
-```js
-replacedServices: [
-  {
-    name: 'posts',
-    url: 'http://localhost:4003/graphql',
-  },
-],
+```yaml
+replacedServices:
+  - name: posts
+    url: http://localhost:4003/graphql
 ```
 
 - `graphName` and `variant` are also in this file. These are what the server will use for the rover commands.
-  - `rover subgraph list ${config.graphName}@${config.variant}` is the rover command used.
+  - a command similar to `rover subgraph list ${config.graphName}@${config.variant}` is used. If you are not seeing the expected results please check the values from here first.
 
 ### Starting the server
 
@@ -46,7 +43,7 @@ After modifying the config file. Run a `yarn watch` or `yarn start` command.
 
 ## Known Limitations
 
-- The subgraphs used by this super graph need to be accessable by your local machine. So you may have to expose some services though port forwarding or connecting to a VPN
+- The subgraphs used by this super graph need to be accessible by your local machine. So you may have to expose some services though port forwarding or connecting to a VPN
 - Introspection needs to be enabled for these subgraphs. The function used from `@apollo/gateway` will use introspection to pull the schema from each subgraph.
 
 ## Notes

@@ -17,6 +17,7 @@
     "@apollo/gateway": "^0.48.3",
     "@apollo/subgraph": "^0.3.3",
     "apollo-server": "^3.6.4",
+    "axios": "^0.27.2",
     "graphql": "^16.3.0",
     "js-yaml": "^4.1.0",
     "path": "^0.12.7"
