@@ -1,22 +1,11 @@
-import { gql } from "apollo-server";
+import { gql } from 'apollo-server';
 
 export const typeDefs = gql`
-  type Post {
-    id: ID!
-    author: Author!
-    content: String!
-    publishedAt: String!
-    title: String!
-  }
-  extend type Author @key(fields: "id") {
-    id: ID! @external
-    posts: [Post]
-  }
-  extend type Query {
-    post(id: ID!): Post
-    posts: [Post]
-  }
-  extend type Mutation {
-    addPost(authorID: ID!, content: String, title: String): Post
+  directive @tag(name: String!) repeatable on FIELD_DEFINITION | OBJECT
+
+  type User @key(fields: "email") {
+    email: ID! @tag(name: "test-from-users")
+    name: String
+    totalProductsCreated: Int
   }
 `;

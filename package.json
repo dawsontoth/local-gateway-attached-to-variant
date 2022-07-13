@@ -14,6 +14,8 @@
     "server:gateway": "wait-on tcp:4001 tcp:4002 && nodemon ./gateway/index.js"
   },
   "dependencies": {
+    "@apollo/composition": "^2.0.5",
+    "@apollo/federation-internals": "^2.0.5",
     "@apollo/gateway": "^0.48.3",
     "@apollo/subgraph": "^0.3.3",
     "apollo-server": "^3.6.4",

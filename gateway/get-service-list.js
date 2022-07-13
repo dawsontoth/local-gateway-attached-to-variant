@@ -3,11 +3,24 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import axios from 'axios';
+import {
+  RemoteGraphQLDataSource,
+  SERVICE_DEFINITION_QUERY,
+} from '@apollo/gateway';
+
+import { compose } from '@apollo/composition';
+import {
+  buildSubgraph,
+  buildSupergraphSchema,
+  errorCauses,
+  operationFromDocument,
+  Subgraphs,
+} from '@apollo/federation-internals';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const config = yaml.load(
+export const config = yaml.load(
   fs.readFileSync(path.resolve(__dirname, '../settings.yaml'), {
     encoding: 'utf-8',
   })
@@ -16,8 +29,17 @@ const config = yaml.load(
 function makeSubgraphQueryPayload() {
   return {
     operationName: 'SubgraphListQuery',
-    query:
-      'query SubgraphListQuery($graph_id: ID!, $variant: String!) {  frontendUrlRoot  graph(id: $graph_id) {    variant(name: $variant) {      subgraphs {        name        url        updatedAt      }    }  }}',
+    query: `query SubgraphListQuery($graph_id: ID!, $variant: String!) {
+      frontendUrlRoot
+      graph(id: $graph_id) {
+        variant(name: $variant) {
+          subgraphs {
+            name
+            url
+          }
+        }
+      }
+    }`,
     variables: { graph_id: config.graphName, variant: config.variant },
   };
 }
@@ -62,8 +84,55 @@ function checkForReplacementSubGraph(apiNames) {
 function getHeaders() {
   return {
     'X-API-KEY': config.apiKey,
-    'apolloggraphql-client-name': `LGATV-${config.apiKey}`,
+    'apolloggraphql-client-name': `LGATV`,
   };
+}
+
+export async function composeWithResolvedConfig(graphs) {
+  const subgraphs = new Subgraphs();
+
+  graphs.forEach((graph) => {
+    console.log(graph);
+    try {
+      console.log(`
+      
+      ${typeof graph.sld}
+
+      
+      `);
+      const subgraph = buildSubgraph(
+        graph.name,
+        graph.url ?? 'http://localhost:4001',
+        graph.sld
+      );
+      subgraphs.add(subgraph);
+    } catch (e) {
+      const graphQLCauses = errorCauses(/** @type {Error} */ (e));
+      if (graphQLCauses) {
+        return {
+          errors: graphQLCauses,
+        };
+      }
+      console.log(e);
+      throw new Error(`failed to build schema for ${graph.name} subgraph`);
+    }
+  });
+
+  try {
+    return compose(subgraphs);
+  } catch (e) {
+    if (e instanceof Error) {
+      return {
+        errors: [new GraphQLError(e.message)],
+      };
+    }
+    if (e instanceof GraphQLError) {
+      return {
+        errors: [e],
+      };
+    }
+    throw e;
+  }
 }
 
 export async function GetServiceList() {
@@ -97,6 +166,68 @@ export async function GetServiceList() {
     ...subgraphs,
     ...config.replacedServices,
   });
+}
+
+// TODO: make fit this from TS to JS
+async function loadServicesFromRemoteEndpoint({
+  serviceList,
+  // getServiceIntrospectionHeaders,
+}) {
+  if (!serviceList || !serviceList.length) {
+    throw new Error(
+      'Tried to load services from remote endpoints but none provided'
+    );
+  }
+
+  // for each service, fetch its introspection schema
+  const promiseOfServiceList = serviceList.map(async ({ name, url }) => {
+    if (!url) {
+      throw new Error(
+        `Tried to load schema for '${name}' but no 'url' was specified.`
+      );
+    }
+
+    const request = {
+      query: SERVICE_DEFINITION_QUERY,
+      http: {
+        url,
+        method: 'POST',
+        // headers: new Headers(
+        //   await getServiceIntrospectionHeaders({ name, url })
+        // ),
+      },
+    };
+
+    return new RemoteGraphQLDataSource({ url, name })
+      .process({
+        kind: 'loading schema',
+        request,
+        context: {},
+      })
+      .then(({ data, errors }) => {
+        if (data && !errors) {
+          return {
+            name,
+            url,
+            sld: data._service.sdl,
+          };
+        }
+
+        console.log(errors);
+
+        throw new Error(errors?.map((e) => e.message).join('\n'));
+      })
+      .catch((err) => {
+        const errorMessage =
+          `Couldn't load service definitions for "${name}" at ${url}` +
+          (err && err.message ? ': ' + err.message || err : '');
+
+        throw new Error(errorMessage);
+      });
+  });
+
+  const serviceDefinitions = await Promise.all(promiseOfServiceList);
+  return { serviceDefinitions };
 }
 
 export async function GetSDLFromStudio() {
@@ -147,8 +278,15 @@ export async function GetSDLFromStudio() {
     }
   });
 
-  console.log(JSON.stringify(subgraphs));
+  const localLists = await loadServicesFromRemoteEndpoint({
+    serviceList: subgraphs.local,
+  });
 
-  console.log('\n\nsuccessfully finished function\n\n');
-  return;
+  const allGraphs = [
+    ...subgraphs.useFromStudio,
+    ...localLists.serviceDefinitions,
+  ];
+
+  const composedFed2Schema = await composeWithResolvedConfig(allGraphs);
+  return composedFed2Schema.supergraphSdl;
 }
