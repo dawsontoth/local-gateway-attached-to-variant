@@ -1,21 +1,24 @@
 import { ApolloGateway, IntrospectAndCompose } from '@apollo/gateway';
 import { ApolloServer } from 'apollo-server';
-import {
-  GetServiceList,
-  GetSDLFromStudio,
-  config,
-} from './get-service-list.js';
+import { GetServiceList, config } from './get-service-list.js';
+import { GetSDLFromStudio } from './get-fed2-schema.js';
 
 async function createAndRunServer() {
-  const studioSchema = await GetSDLFromStudio();
+  let supergraphSdl;
 
-  const subgraphs = await GetServiceList();
+  if (!config.useStudio) {
+    const subgraphs = await GetServiceList();
 
-  const localServiceListGraph = new IntrospectAndCompose({
-    subgraphs,
-  });
+    const localServiceListGraph = new IntrospectAndCompose({
+      subgraphs,
+    });
 
-  const supergraphSdl = !!config.fed2 ? studioSchema : localServiceListGraph;
+    supergraphSdl = localServiceListGraph;
+  } else {
+    supergraphSdl = !!config.fed2
+      ? await GetSDLFromStudio()
+      : localServiceListGraph;
+  }
 
   const gateway = new ApolloGateway({
     supergraphSdl,
