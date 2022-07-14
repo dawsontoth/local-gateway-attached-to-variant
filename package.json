@@ -15,7 +15,9 @@
   },
   "dependencies": {
     "@apollo/composition": "^2.0.5",
+    "@apollo/federation-1": "npm:@apollo/federation@0.36.1",
     "@apollo/federation-internals": "^2.0.5",
+    "@apollo/query-planner-1": "npm:@apollo/query-planner@0.10.1",
     "@apollo/gateway": "^0.48.3",
     "@apollo/subgraph": "^0.3.3",
     "apollo-server": "^3.6.4",
