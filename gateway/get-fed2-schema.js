@@ -47,5 +47,13 @@ async function composeWithResolvedConfig(graphs) {
 
 export async function GetFedTwoSuperGraphSchema(allGraphs) {
   const composedFed2Schema = await composeWithResolvedConfig(allGraphs);
+
+  if (!composedFed2Schema.schema || composedFed2Schema.errors) {
+    console.log('💣 Schema did not compose with Federation v2\n');
+    console.log(fed2.errors.map((e) => e.toString()).join('\n\n'));
+    console.log('\n');
+    throw new Error('Schema did not compile correctly.');
+  }
+
   return composedFed2Schema.supergraphSdl;
 }

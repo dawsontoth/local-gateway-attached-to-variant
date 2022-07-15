@@ -80,8 +80,12 @@ export async function GetServiceList() {
     );
   }
 
-  return Object.values({
-    ...subgraphs,
-    ...config.replacedServices,
+  return subgraphs.map((graph) => {
+    const i = config.replacedServices.map((s) => s.name).indexOf(graph.name);
+    if (i > -1) {
+      return config.replacedServices[i];
+    } else {
+      return graph;
+    }
   });
 }
