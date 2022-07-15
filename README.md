@@ -33,6 +33,8 @@ replacedServices:
 
 - `graphName` and `variant` are also in this file. These are what the server will use for the rover commands.
   - a command similar to `rover subgraph list ${config.graphName}@${config.variant}` is used. If you are not seeing the expected results please check the values from here first.
+- `fed2` if true will try to compile your schema using fed 2 spec. If false will use fed 1.
+- `useStudio` if set to true will use
 
 ### Starting the server
 
@@ -49,4 +51,5 @@ After modifying the config file. Run a `yarn watch` or `yarn start` command.
 ## Notes
 
 - Make sure the subgraph is started before starting the gateway.
-- you can replace multiple subgraphs at once.
+- You can replace multiple subgraphs at once.
+- This was only tested with a Fed 2 graph, Fed one may be a little buggy.
