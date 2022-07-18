@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "schedule": null,
@@ -6,30 +5,26 @@
   "enabledManagers": ["npm"],
   "dependencyDashboard": true,
   "postUpdateOptions": ["npmDedupe"],
-  "extends": [
-    "config:base"
-  ],
-    "packageRules": [
+  "ignoreDeps": ["@apollo/query-planner-1", "@apollo/federation-1"],
+  "extends": ["config:base"],
+  "packageRules": [
     {
-      "matchPackagePatterns": [
-        "*"
+      "matchPackagePatterns": ["*"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "excludePackageNames": [
+        "@apollo/query-planner-1",
+        "@apollo/federation-1"
       ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "excludePackageNames": ["@apollo/query-planner-1","@apollo/federation-1"],
       "groupName": "all non-major dependencies",
       "groupSlug": "all-minor-patch"
     },
     {
-      "matchPackagePatterns": [
-        "*"
+      "matchPackagePatterns": ["*"],
+      "matchUpdateTypes": ["major"],
+      "excludePackageNames": [
+        "@apollo/query-planner-1",
+        "@apollo/federation-1"
       ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "excludePackageNames": ["@apollo/query-planner-1","@apollo/federation-1"],
       "groupName": "all major dependencies",
       "groupSlug": "all-major-patch"
     }
