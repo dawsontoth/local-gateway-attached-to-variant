@@ -5,6 +5,7 @@
   "enabledManagers": ["npm"],
   "dependencyDashboard": true,
   "postUpdateOptions": ["npmDedupe"],
+  "rangeStrategy":"update-lockfile",
   "ignoreDeps": ["@apollo/query-planner-1", "@apollo/federation-1"],
   "extends": ["config:base"],
   "packageRules": [
