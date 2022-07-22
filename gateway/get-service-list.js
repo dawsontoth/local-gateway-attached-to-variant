@@ -62,7 +62,7 @@ export async function GetServiceList() {
     }
   );
 
-  if (data.errors || !data.data) {
+  if (data.errors || !data?.data?.graph?.variant?.subgraphs?.length) {
     throw new Error(
       `something went wrong when talking to studio: ${
         data.errors
