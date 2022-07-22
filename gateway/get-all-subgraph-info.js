@@ -68,7 +68,7 @@ async function loadServicesFromRemoteEndpoint({
           return {
             name,
             url,
-            sld: data._service.sdl,
+            sdl: data._service.sdl,
           };
         }
 
@@ -130,7 +130,7 @@ export async function GetSDLFromStudio() {
       subgraphs.useFromStudio.push({
         name: service.name,
         url: service.url,
-        sld: service.activePartialSchema.sdl,
+        sdl: service.activePartialSchema.sdl,
       });
     }
   });
