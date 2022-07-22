@@ -98,7 +98,7 @@ export async function GetSDLFromStudio() {
     }
   );
 
-  if (data.errors || !data.data) {
+  if (data.errors || !data?.data?.service) {
     throw new Error(
       `something went wrong when talking to studio: ${
         data.errors
