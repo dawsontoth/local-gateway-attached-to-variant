@@ -121,7 +121,7 @@ export async function GetSDLFromStudio() {
     local: config.replacedServices,
   };
 
-  services.map((service) => {
+  services.forEach((service) => {
     const indexOfReplacement = config.replacedServices
       .map((s) => s.name)
       .indexOf(service.name);
