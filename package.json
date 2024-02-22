@@ -22,7 +22,7 @@
     "@apollo/query-planner-1": "npm:@apollo/query-planner@0.10.2",
     "@apollo/subgraph": "^2.0.5",
     "apollo-server": "^3.10.0",
-    "axios": "^0.27.2",
+    "axios": "^0.28.0",
     "graphql": "^16.5.0",
     "js-yaml": "^4.1.0",
     "path": "^0.12.7"
